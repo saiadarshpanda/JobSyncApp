@@ -1,4 +1,5 @@
 using JobSyncWebApi.Models;
+using JobSyncWebApi.Repository;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<JobContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("JobConnection")));
+builder.Services.AddScoped<IJobRepository,SQLJobRepository>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",

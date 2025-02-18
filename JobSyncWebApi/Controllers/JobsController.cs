@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JobSyncWebApi.Models;
+using JobSyncWebApi.Repository;
+using JobSyncWebApi.Models.DTO;
+using System.Data;
 
 namespace JobSyncWebApi.Controllers
 {
@@ -13,25 +16,27 @@ namespace JobSyncWebApi.Controllers
     [ApiController]
     public class JobsController : ControllerBase
     {
-        private readonly JobContext _context;
+       
+        private readonly IJobRepository repository;
 
-        public JobsController(JobContext context)
+        public JobsController(IJobRepository jobRepository)
         {
-            _context = context;
+            repository=jobRepository;
         }
 
         // GET: api/Jobs
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Job>>> GetJobSet()
         {
-            return await _context.JobSet.ToListAsync();
+
+            return await repository.GetAllJobs();
         }
 
         // GET: api/Jobs/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Job>> GetJob(int id)
         {
-            var job = await _context.JobSet.FindAsync(id);
+            var job = await repository.GetByIDAsync(id);
 
             if (job == null)
             {
@@ -46,20 +51,18 @@ namespace JobSyncWebApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutJob(int id, Job job)
         {
-            if (id != job.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(job).State = EntityState.Modified;
-
+           
             try
             {
-                await _context.SaveChangesAsync();
+                var jobdata= await repository.UpdateJobAsync( id, job);
+                if (jobdata==null)
+                {
+                    return BadRequest();
+                }
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!JobExists(id))
+                if (repository.GetByIDAsync(id)==null)
                 {
                     return NotFound();
                 }
@@ -75,34 +78,38 @@ namespace JobSyncWebApi.Controllers
         // POST: api/Jobs
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Job>> PostJob(Job job)
+        public async Task<ActionResult> PostJob(JobDto jobdto)
         {
-            
-            _context.JobSet.Add(job);
-            await _context.SaveChangesAsync();
+            var jobmodel = new Job()
+            {
+                JobType= jobdto.JobType,
+                JobListingName = jobdto.JobListingName,
+                Description = jobdto.Description,
+                Salary = jobdto.Salary,
+                Location= jobdto.Location,
+                CompanyName = jobdto.CompanyName,
+                CompanyDescription= jobdto.CompanyDescription,
+                ContactEmail = jobdto.ContactEmail,
+                ContactPhone= jobdto.ContactPhone
+            };
+            jobmodel= await repository.CreateJobAsync(jobmodel); 
 
-            return CreatedAtAction("GetJob", new { id = job.Id }, job);
+            return CreatedAtAction("GetJob", new { id = jobmodel.Id }, jobmodel);
         }
 
         // DELETE: api/Jobs/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteJob(int id)
         {
-            var job = await _context.JobSet.FindAsync(id);
+            var job = await repository.DeleteJobAsync(id);
             if (job == null)
             {
                 return NotFound();
             }
 
-            _context.JobSet.Remove(job);
-            await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
-        private bool JobExists(int id)
-        {
-            return _context.JobSet.Any(e => e.Id == id);
-        }
+       
     }
 }
