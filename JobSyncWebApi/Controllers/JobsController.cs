@@ -9,6 +9,7 @@ using JobSyncWebApi.Models;
 using JobSyncWebApi.Repository;
 using JobSyncWebApi.Models.DTO;
 using System.Data;
+using AutoMapper;
 
 namespace JobSyncWebApi.Controllers
 {
@@ -18,10 +19,12 @@ namespace JobSyncWebApi.Controllers
     {
        
         private readonly IJobRepository repository;
+        private readonly IMapper mapper;
 
-        public JobsController(IJobRepository jobRepository)
+        public JobsController(IJobRepository jobRepository,IMapper mapper)
         {
             repository=jobRepository;
+            this.mapper = mapper;
         }
 
         // GET: api/Jobs
@@ -80,19 +83,10 @@ namespace JobSyncWebApi.Controllers
         [HttpPost]
         public async Task<ActionResult> PostJob(JobDto jobdto)
         {
-            var jobmodel = new Job()
-            {
-                JobType= jobdto.JobType,
-                JobListingName = jobdto.JobListingName,
-                Description = jobdto.Description,
-                Salary = jobdto.Salary,
-                Location= jobdto.Location,
-                CompanyName = jobdto.CompanyName,
-                CompanyDescription= jobdto.CompanyDescription,
-                ContactEmail = jobdto.ContactEmail,
-                ContactPhone= jobdto.ContactPhone
-            };
-            jobmodel= await repository.CreateJobAsync(jobmodel); 
+          
+            var jobmodel=mapper.Map<Job>(jobdto);
+            jobmodel = await repository.CreateJobAsync(jobmodel);
+            
 
             return CreatedAtAction("GetJob", new { id = jobmodel.Id }, jobmodel);
         }
