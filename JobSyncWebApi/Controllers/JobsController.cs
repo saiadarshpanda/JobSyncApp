@@ -29,10 +29,11 @@ namespace JobSyncWebApi.Controllers
 
         // GET: api/Jobs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Job>>> GetJobSet([FromQuery] string? jobtype, [FromQuery] string? jobname, [FromQuery] string? location, [FromQuery] string? companyname, [FromQuery] string? sortBy, [FromQuery] bool isDescending) 
+        public async Task<ActionResult<IEnumerable<Job>>> GetJobSet([FromQuery] string? jobtype, [FromQuery] string? jobname, [FromQuery] string? location, [FromQuery] string? companyname, [FromQuery] string? sortBy, [FromQuery] bool isDescending,
+            [FromQuery] int pagenumber=1, [FromQuery] int pagesize=10) 
         {
 
-            return await repository.GetAllJobs(jobtype, jobname, location, companyname, sortBy, isDescending);
+            return await repository.GetAllJobs(jobtype, jobname, location, companyname, sortBy, isDescending,pagenumber,pagesize);
         }
 
         // GET: api/Jobs/5

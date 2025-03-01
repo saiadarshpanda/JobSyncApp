@@ -17,7 +17,7 @@ namespace JobSyncWebApi.Repository
             _context = context;
         }
 
-        public async Task<List<Job>> GetAllJobs(string? jobtype = null, string? jobname = null, string? location = null, string? companyname = null,string ? sortBy = null, bool isDescending = false)
+        public async Task<List<Job>> GetAllJobs(string? jobtype = null, string? jobname = null, string? location = null, string? companyname = null,string ? sortBy = null, bool isDescending = false, int pagenumber = 1, int pagesize = 10)
         {
             var query = _context.JobSet.AsNoTracking().AsQueryable(); // AsNoTracking for read-only optimization,AsQueryable allows query construction before execution
             // IQueryable<Job> query = _context.JobSet; // No need for AsQueryable(),AsQueryable() is a method that converts an IEnumerable<T> into an IQueryable<T>.
@@ -42,9 +42,10 @@ namespace JobSyncWebApi.Repository
             {
                 query = isDescending? query.OrderByDescending(x=>x.Location) : query.OrderBy(x => x.Location);
             }
+            //Pagination
+            var skipresult = (pagenumber - 1) * pagesize;
 
-
-            return await query.ToListAsync();
+            return await query.Skip(skipresult).Take(pagesize).ToListAsync();
         }
         public async Task<Job> GetByIDAsync(int id)
         {
