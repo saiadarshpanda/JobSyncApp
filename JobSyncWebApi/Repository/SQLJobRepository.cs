@@ -1,6 +1,9 @@
 ﻿using JobSyncWebApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace JobSyncWebApi.Repository
 {
@@ -12,9 +15,30 @@ namespace JobSyncWebApi.Repository
             _context = context;
         }
 
-        public async Task<List<Job>> GetAllJobs()
+        public async Task<List<Job>> GetAllJobs(string? jobtype = null, string? jobname = null, string? location = null, string? companyname = null)
         {
-           return await _context.JobSet.ToListAsync();
+            var query = _context.JobSet.AsNoTracking().AsQueryable(); // AsNoTracking for read-only optimization,AsQueryable allows query construction before execution
+            // IQueryable<Job> query = _context.JobSet; // No need for AsQueryable(),AsQueryable() is a method that converts an IEnumerable<T> into an IQueryable<T>.
+
+            if (!string.IsNullOrEmpty(jobtype))
+            {
+                query = query.Where(e => e.JobType.Contains(jobtype));
+            }
+            if (!string.IsNullOrEmpty(jobname))
+            {
+                query = query.Where(e => e.JobListingName.Contains(jobname));
+            }
+            if (!string.IsNullOrEmpty(location))
+            {
+                query = query.Where(e => e.Location.Contains(location));
+            }
+            if (!string.IsNullOrEmpty(companyname))
+            {
+                query = query.Where(e => e.CompanyName.Contains(companyname));
+            }
+
+          
+            return await query.ToListAsync();
         }
         public async Task<Job> GetByIDAsync(int id)
         {
