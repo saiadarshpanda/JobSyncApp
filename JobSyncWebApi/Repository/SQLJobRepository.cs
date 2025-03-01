@@ -1,7 +1,9 @@
 ﻿using JobSyncWebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Xml.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
@@ -15,7 +17,7 @@ namespace JobSyncWebApi.Repository
             _context = context;
         }
 
-        public async Task<List<Job>> GetAllJobs(string? jobtype = null, string? jobname = null, string? location = null, string? companyname = null)
+        public async Task<List<Job>> GetAllJobs(string? jobtype = null, string? jobname = null, string? location = null, string? companyname = null,string ? sortBy = null, bool isDescending = false)
         {
             var query = _context.JobSet.AsNoTracking().AsQueryable(); // AsNoTracking for read-only optimization,AsQueryable allows query construction before execution
             // IQueryable<Job> query = _context.JobSet; // No need for AsQueryable(),AsQueryable() is a method that converts an IEnumerable<T> into an IQueryable<T>.
@@ -36,8 +38,12 @@ namespace JobSyncWebApi.Repository
             {
                 query = query.Where(e => e.CompanyName.Contains(companyname));
             }
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                query = isDescending? query.OrderByDescending(x=>x.Location) : query.OrderBy(x => x.Location);
+            }
 
-          
+
             return await query.ToListAsync();
         }
         public async Task<Job> GetByIDAsync(int id)

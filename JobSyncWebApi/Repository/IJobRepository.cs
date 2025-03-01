@@ -7,7 +7,7 @@ namespace JobSyncWebApi.Repository
     public interface IJobRepository
     {
 
-        Task<List<Job>> GetAllJobs(string? jobtype=null,string? jobname = null,  string? location = null,  string? companyname = null); 
+        Task<List<Job>> GetAllJobs(string? jobtype=null,string? jobname = null,  string? location = null,  string? companyname = null, string? sortBy = null, bool isDescending=false); 
         Task<Job> GetByIDAsync(int id);   
         Task<Job> UpdateJobAsync(int id, Job job); 
         Task<Job> CreateJobAsync(Job job);
