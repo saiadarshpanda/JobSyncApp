@@ -4,7 +4,7 @@ namespace JobSyncWebApi.Models
 {
     public class JobContext:DbContext
     {
-        public JobContext(DbContextOptions options):base(options)
+        public JobContext(DbContextOptions<JobContext> options):base(options)
         {
             
         }

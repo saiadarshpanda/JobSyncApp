@@ -10,6 +10,7 @@ using JobSyncWebApi.Repository;
 using JobSyncWebApi.Models.DTO;
 using System.Data;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JobSyncWebApi.Controllers
 {
@@ -29,6 +30,7 @@ namespace JobSyncWebApi.Controllers
 
         // GET: api/Jobs
         [HttpGet]
+        [Authorize(Roles = "Reader")]
         public async Task<ActionResult<IEnumerable<Job>>> GetJobSet([FromQuery] string? jobtype, [FromQuery] string? jobname, [FromQuery] string? location, [FromQuery] string? companyname, [FromQuery] string? sortBy, [FromQuery] bool isDescending,
             [FromQuery] int pagenumber=1, [FromQuery] int pagesize=10) 
         {
@@ -38,6 +40,7 @@ namespace JobSyncWebApi.Controllers
 
         // GET: api/Jobs/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Reader")]
         public async Task<ActionResult<Job>> GetJob(int id)
         {
             var job = await repository.GetByIDAsync(id);
@@ -53,6 +56,7 @@ namespace JobSyncWebApi.Controllers
         // PUT: api/Jobs/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> PutJob(int id, Job job)
         {
            
@@ -82,6 +86,7 @@ namespace JobSyncWebApi.Controllers
         // POST: api/Jobs
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Writer")]
         public async Task<ActionResult> PostJob(JobDto jobdto)
         {
           
@@ -94,6 +99,7 @@ namespace JobSyncWebApi.Controllers
 
         // DELETE: api/Jobs/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> DeleteJob(int id)
         {
             var job = await repository.DeleteJobAsync(id);
