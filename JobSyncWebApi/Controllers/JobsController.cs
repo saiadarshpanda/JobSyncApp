@@ -11,6 +11,7 @@ using JobSyncWebApi.Models.DTO;
 using System.Data;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 
 namespace JobSyncWebApi.Controllers
 {
@@ -21,26 +22,27 @@ namespace JobSyncWebApi.Controllers
        
         private readonly IJobRepository repository;
         private readonly IMapper mapper;
-
-        public JobsController(IJobRepository jobRepository,IMapper mapper)
+        private readonly ILogger<JobsController> logger;
+        public JobsController(IJobRepository jobRepository,IMapper mapper, ILogger<JobsController> logger)
         {
-            repository=jobRepository;
+            repository = jobRepository;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         // GET: api/Jobs
         [HttpGet]
-        [Authorize(Roles = "Reader")]
+        //[Authorize(Roles = "Reader")]
         public async Task<ActionResult<IEnumerable<Job>>> GetJobSet([FromQuery] string? jobtype, [FromQuery] string? jobname, [FromQuery] string? location, [FromQuery] string? companyname, [FromQuery] string? sortBy, [FromQuery] bool isDescending,
             [FromQuery] int pagenumber=1, [FromQuery] int pagesize=10) 
         {
-
+            logger.LogInformation("Your log starts from here");
             return await repository.GetAllJobs(jobtype, jobname, location, companyname, sortBy, isDescending,pagenumber,pagesize);
         }
 
         // GET: api/Jobs/5
         [HttpGet("{id}")]
-        [Authorize(Roles = "Reader")]
+        //[Authorize(Roles = "Reader")]
         public async Task<ActionResult<Job>> GetJob(int id)
         {
             var job = await repository.GetByIDAsync(id);
@@ -49,7 +51,9 @@ namespace JobSyncWebApi.Controllers
             {
                 return NotFound();
             }
-
+            //throw   new Exception("its a new exception");
+            //logger.LogWarning("Here you go");
+            //logger.LogInformation($"Your log starts from here:{JsonSerializer.Serialize( job)}");
             return job;
         }
 

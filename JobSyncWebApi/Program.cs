@@ -1,4 +1,5 @@
 using JobSyncWebApi.Mappings;
+using JobSyncWebApi.Middlewares;
 using JobSyncWebApi.Models;
 using JobSyncWebApi.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -7,12 +8,22 @@ using Microsoft.CodeAnalysis.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+var logger = new LoggerConfiguration()
+    //.WriteTo.Console() //For dev
+    .WriteTo.File("Logs/Jobsync_Log.txt", rollingInterval: RollingInterval.Minute)
+    .MinimumLevel.Information()
+    .CreateLogger();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<JobContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("JobConnection")));
@@ -110,6 +121,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseMiddleware<ExceptionHandlerMiddleware>();
+app.UseMiddleware<RequestResponseLoggingMiddleware>();
+
 app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
 app.UseAuthentication();
